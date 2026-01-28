@@ -9,6 +9,7 @@ dependencies = [
     "httpx>=0.28.1",
     "logfire>=4.20.0",
     "logging>=0.4.9.6",
+    "numpy>=2.4.1",
     "pydantic>=2.12.5",
     "pydantic-ai>=1.47.0",
     "pymongo>=4.16.0",

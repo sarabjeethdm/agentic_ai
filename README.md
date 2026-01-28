@@ -31,42 +31,50 @@ Critic / Reflector Agent
 Continue or Finish
 ```
 
-## Test
+## 🏗️ Architecture
 
-```bash
-uv run client.py
-Autonomous Agent (type 'exit' to quit)
-
-You: what's double the current temperature in bengaluru?
-Agent: Double the current temperature in Bengaluru is 53.0°C.
-
-You: should i carry a jacket in bengaluru today ?
-Agent: The current temperature in Bengaluru is 26.5°C. Generally, temperatures below 20°C may warrant carrying a jacket. Since 26.5°C is relatively warm, it likely doesn't require a jacket.
-
-You: is today colder than yesterday in bengaluru ?
-Agent: The current temperature in Bengaluru is still 26.5°C. Unfortunately, I don't have the temperature data for yesterday to compare. Is there anything else you would like to know?
-
-You: keep calculating the temperature in bengaluru until it changes ?
-Agent: The current temperature in Bengaluru is still 26.5°C, which is consistent with previous observations. Since there is no change in the temperature, I will repeat from step 3. Please confirm how you would like to proceed or if you want to continue observing the temperature.
-
-You: yes continue
-Traceback (most recent call last):
-  File "/home/linux-dex/Documents/HDM/Agentic-AI/agentic_ai_w_fastmcp/client.py", line 21, in <module>
-    asyncio.run(main())
-  File "/home/linux-dex/.local/share/uv/python/cpython-3.12.11-linux-x86_64-gnu/lib/python3.12/asyncio/runners.py", line 195, in run
-    return runner.run(main)
-           ^^^^^^^^^^^^^^^^
-  File "/home/linux-dex/.local/share/uv/python/cpython-3.12.11-linux-x86_64-gnu/lib/python3.12/asyncio/runners.py", line 118, in run
-    return self._loop.run_until_complete(task)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/linux-dex/.local/share/uv/python/cpython-3.12.11-linux-x86_64-gnu/lib/python3.12/asyncio/base_events.py", line 691, in run_until_complete
-    return future.result()
-           ^^^^^^^^^^^^^^^
-  File "/home/linux-dex/Documents/HDM/Agentic-AI/agentic_ai_w_fastmcp/client.py", line 16, in main
-    result = await run_autonomous_agent(goal)
-             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/linux-dex/Documents/HDM/Agentic-AI/agentic_ai_w_fastmcp/agent/autonomous.py", line 33, in run_autonomous_agent
-    return state.observations[-1]
-           ~~~~~~~~~~~~~~~~~~^^^^
-IndexError: list index out of range
+```txt
+┌─────────────────────────────────────────────────────────────┐
+│                      User Query                             │
+└────────────────────┬────────────────────────────────────────┘
+                     │
+                     ▼
+┌─────────────────────────────────────────────────────────────┐
+│              Memory Store (Azure Cosmos DB)                 │
+│  • Retrieve last 5 conversations (session history)          │
+│  • Find 3 similar past interactions (vector search)         │
+│  • Generate embeddings (OpenAI text-embedding-3-small)      │
+└────────────────────┬────────────────────────────────────────┘
+                     │
+                     ▼
+┌─────────────────────────────────────────────────────────────┐
+│                  Planner Agent                              │
+│  • Considers conversation history                           │
+│  • Learns from similar past interactions                    │
+│  • Generates structured plan (JSON steps)                   │
+└────────────────────┬────────────────────────────────────────┘
+                     │
+                     ▼
+┌─────────────────────────────────────────────────────────────┐
+│                  Executor Agent                             │
+│  • Executes plan steps sequentially                         │
+│  • Uses MCP tools (Calculator, Weather API)                 │
+│  • Records observations from each step                      │
+└────────────────────┬────────────────────────────────────────┘
+                     │
+                     ▼
+┌─────────────────────────────────────────────────────────────┐
+│                Reflector Agent                              │
+│  • Analyzes execution results                               │
+│  • Compares with similar past successes                     │
+│  • Decides: CONTINUE / RETRY / FAIL                         │
+└────────────────────┬────────────────────────────────────────┘
+                     │
+                     ▼
+┌─────────────────────────────────────────────────────────────┐
+│              Store Interaction in Memory                    │
+│  • Goal, Plan, Observations, Result                         │
+│  • Generate 1536-dim embedding for semantic search          │
+│  • Store with timestamp and session ID                      │
+└─────────────────────────────────────────────────────────────┘
 ```
